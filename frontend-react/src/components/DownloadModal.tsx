@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Download, Smartphone, ShieldCheck, CheckCircle2, AlertCircle, 
-  ExternalLink, X, QrCode, Copy, Check, FileCheck
+  ExternalLink, X, QrCode, Copy, Check, FileCheck, Code2
 } from 'lucide-react';
 
 interface DownloadModalProps {
@@ -13,6 +13,8 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose })
   const [copied, setCopied] = useState(false);
   const sha256Checksum = "9e5c47f8a12d3b4e6f7a8c9b0e1d2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e";
   const apkDownloadUrl = "/downloads/ricecare-ai-v2.0.0.apk";
+  const githubReleasesUrl = "https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases";
+  const githubActionsUrl = "https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/actions";
 
   if (!isOpen) return null;
 
@@ -36,7 +38,7 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose })
                 Download RiceCare AI for Android
               </h3>
               <p className="text-[11px] text-emerald-800 font-semibold">
-                Version 2.0.0 (Release Build) • Android 8.0+ (API 26+)
+                Version 2.0.0 (Release Build) • Android 8.0+ (API 26–36)
               </p>
             </div>
           </div>
@@ -50,19 +52,35 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose })
 
         {/* Content */}
         <div className="p-6 overflow-y-auto space-y-5 text-xs text-slate-700">
-          {/* Main Download Button */}
+          {/* Main Download Options */}
           <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200 text-center space-y-3">
             <p className="text-xs font-semibold text-emerald-950">
               Install directly on any Android smartphone or tablet:
             </p>
-            <a
-              href={apkDownloadUrl}
-              download="RiceCare-AI-v2.0.0.apk"
-              className="inline-flex items-center justify-center space-x-2 w-full py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition active:scale-95"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Release APK (~18 MB)</span>
-            </a>
+            
+            <div className="flex flex-col gap-2">
+              <a
+                href={githubReleasesUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center space-x-2 w-full py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition active:scale-95"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Latest APK from GitHub Releases</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
+
+              <a
+                href={githubActionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center space-x-2 w-full py-2.5 px-4 rounded-xl bg-white border border-slate-300 text-slate-800 font-semibold text-xs hover:bg-slate-50 transition"
+              >
+                <Code2 className="w-4 h-4 text-slate-700" />
+                <span>View Automated Builds in GitHub Actions</span>
+              </a>
+            </div>
+
             <p className="text-[10px] text-slate-500">
               Compatible with Samsung, Xiaomi, Realme, Oppo, Vivo, Google Pixel, OnePlus & Motorola
             </p>
@@ -72,24 +90,24 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose })
           <div className="space-y-2">
             <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center space-x-1.5">
               <FileCheck className="w-4 h-4 text-emerald-600" />
-              <span>Installation Steps on Your Phone:</span>
+              <span>How to Install on Your Android Phone:</span>
             </h4>
             <ol className="space-y-2 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
               <li className="flex items-start space-x-2">
                 <span className="w-4 h-4 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
-                <span>Tap <strong>Download Release APK</strong> above to save the file onto your Android phone.</span>
+                <span>Tap <strong>Download Latest APK</strong> above to download <code>RiceCare-AI.apk</code>.</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span className="w-4 h-4 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
-                <span>Open the downloaded <code>RiceCare-AI-v2.0.0.apk</code> from your notifications or Files app.</span>
+                <span>Open the downloaded file from your browser notifications or <strong>Downloads</strong> folder.</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span className="w-4 h-4 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
-                <span>If prompted, toggle <strong>"Allow from this source"</strong> in Android Security Settings.</span>
+                <span>If your phone prompts for permission, tap <strong>Settings</strong> and turn on <strong>"Allow from this source"</strong>.</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span className="w-4 h-4 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">4</span>
-                <span>Tap <strong>Install</strong>, launch the app, and grant Camera access for field scanning.</span>
+                <span>Tap <strong>Install</strong>, open RiceCare AI, and grant Camera access for diagnosing rice leaves!</span>
               </li>
             </ol>
           </div>
@@ -111,14 +129,6 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose })
             </div>
             <p className="font-mono text-[9px] text-slate-500 break-all select-all">
               {sha256Checksum}
-            </p>
-          </div>
-
-          {/* Google Play Note */}
-          <div className="p-3 rounded-xl bg-slate-100/70 border border-slate-200 text-slate-600 text-[11px] space-y-1">
-            <span className="font-bold text-slate-800">Google Play Store Submission:</span>
-            <p>
-              The Android App Bundle (AAB) package is generated and formatted according to Google Play Target API 35 standards for direct store distribution.
             </p>
           </div>
         </div>
