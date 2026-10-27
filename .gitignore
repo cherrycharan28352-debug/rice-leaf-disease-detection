@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Database
+*.sqlite3
+*.db-journal
+
+# Environment variables
+.env
+.env.local
+
+# Node & Frontend
+node_modules/
+frontend-react/node_modules/
+frontend-react/.vite/
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Android Build Artifacts
+.gradle/
+frontend-react/android/.gradle/
+frontend-react/android/build/
+frontend-react/android/app/build/
+frontend-react/android/local.properties
+*.apk
+*.aab
+
+# Uploads & temporary test outputs
+uploads/*
+!uploads/.gitkeep
+downloads/*
+!downloads/.gitkeep
+static_reports/*.pdf
+!static_reports/.gitkeep
+verification_tests/*.jpg
+*.log
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

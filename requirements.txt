@@ -1,0 +1,21 @@
+# RiceCare AI - Core Dependencies
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0
+python-multipart>=0.0.9
+pyjwt>=2.8.0
+Werkzeug>=3.0.0
+
+# Deep Learning & Computer Vision
+torch>=2.0.0
+torchvision>=0.15.0
+opencv-python>=4.8.0
+pillow>=10.0.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Utilities & Networking
+requests>=2.31.0
+python-dotenv>=1.0.0
+httpx>=0.27.0

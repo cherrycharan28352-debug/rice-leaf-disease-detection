@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  ricecare-ai:
+    build: .
+    container_name: ricecare_ai_server
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - SECRET_KEY=ricecare_production_secret_key_2026_deploy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./agriversion.db:/app/agriversion.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
