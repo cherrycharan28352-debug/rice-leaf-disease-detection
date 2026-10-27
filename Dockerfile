@@ -27,9 +27,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 
-# Install system dependencies for OpenCV, Pillow, and networking
+# Install runtime system libraries for OpenCV and healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
     libgl1 \
     libglib2.0-0 \
     curl \
@@ -66,7 +65,7 @@ EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD curl -f http://localhost:8000/api/health || exit 1
+  CMD curl -f http://localhost:${PORT:-8000}/api/health || exit 1
 
-# Start production server
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# Start production server with dynamic port and memory-safe single worker
+CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
