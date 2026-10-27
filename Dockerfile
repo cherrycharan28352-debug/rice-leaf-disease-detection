@@ -1,8 +1,25 @@
 # ==============================================================================
-# RiceCare AI - Production Dockerfile
-# High-performance container for PyTorch HybridCNNPCAVQC model and FastAPI API
+# RiceCare AI - Multi-Stage Production Dockerfile
+# Builds modern React frontend and runs with PyTorch HybridCNNPCAVQC FastAPI server
 # ==============================================================================
 
+# ------------------------------------------------------------------------------
+# Stage 1: Build Modern React Frontend
+# ------------------------------------------------------------------------------
+FROM node:22-alpine AS frontend-builder
+WORKDIR /app
+
+# Copy package manifests and install frontend dependencies
+COPY frontend-react/package*.json ./
+RUN npm install
+
+# Copy source code and compile production bundle
+COPY frontend-react/ ./
+RUN npm run build
+
+# ------------------------------------------------------------------------------
+# Stage 2: Production Python Backend Runtime
+# ------------------------------------------------------------------------------
 FROM python:3.12-slim
 
 # Prevent Python from writing .pyc files and buffer stdout
@@ -10,7 +27,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 
-# Install system dependencies for OpenCV and image processing
+# Install system dependencies for OpenCV, Pillow, and networking
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1 \
@@ -34,19 +51,21 @@ COPY ml/ ./ml/
 COPY models/ ./models/
 COPY uploads/ ./uploads/
 COPY downloads/ ./downloads/
+COPY static_reports/ ./static_reports/
+COPY translations/ ./translations/
 COPY agriversion.db .
 COPY server.py .
 COPY run.py .
 
-# Copy built production React frontend
-COPY frontend-react/dist/ ./frontend-react/dist/
+# Copy compiled frontend from Stage 1 builder
+COPY --from=frontend-builder /app/dist ./frontend-react/dist
 COPY frontend/assets/sample_leaves/ ./frontend/assets/sample_leaves/
 
 # Expose HTTP port
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD curl -f http://localhost:8000/api/health || exit 1
 
 # Start production server
