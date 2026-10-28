@@ -50,6 +50,10 @@ COPY ml/ ./ml/
 COPY models/ ./models/
 COPY uploads/ ./uploads/
 COPY downloads/ ./downloads/
+# Ensure the compiled Android APK is available locally in downloads
+RUN if [ ! -f ./downloads/RiceCare-AI-v2.0.0.apk ]; then \
+        curl -fsSL -o ./downloads/RiceCare-AI-v2.0.0.apk https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases/download/v2.0.0/RiceCare-AI-v2.0.0.apk || true; \
+    fi
 COPY static_reports/ ./static_reports/
 COPY translations/ ./translations/
 COPY agriversion.db .

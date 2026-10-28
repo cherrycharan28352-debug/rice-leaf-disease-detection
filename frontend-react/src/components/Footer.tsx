@@ -3,9 +3,10 @@ import { Sprout, ShieldAlert, Cpu, Heart, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
   setCurrentTab: (tab: string) => void;
+  onOpenDownload?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ setCurrentTab }) => {
+export const Footer: React.FC<FooterProps> = ({ setCurrentTab, onOpenDownload }) => {
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -90,6 +91,24 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentTab }) => {
                 >
                   Research & Methodology
                 </button>
+              </li>
+              <li>
+                {onOpenDownload ? (
+                  <button
+                    onClick={onOpenDownload}
+                    className="text-emerald-400 font-semibold hover:text-emerald-300 transition flex items-center space-x-1"
+                  >
+                    <span>Download Android App (APK)</span>
+                  </button>
+                ) : (
+                  <a
+                    href="https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases/download/v2.0.0/RiceCare-AI-v2.0.0.apk"
+                    download="RiceCare-AI-v2.0.0.apk"
+                    className="text-emerald-400 font-semibold hover:text-emerald-300 transition flex items-center space-x-1"
+                  >
+                    <span>Download Android App (APK)</span>
+                  </a>
+                )}
               </li>
             </ul>
           </div>

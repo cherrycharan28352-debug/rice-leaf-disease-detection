@@ -1,14 +1,16 @@
 import React from 'react';
 import { 
   Sprout, Camera, BookOpen, BarChart3, ShieldCheck, Microscope, 
-  Cpu, ArrowRight, CheckCircle2, ChevronRight, Activity, Leaf, Sparkles
+  Cpu, ArrowRight, CheckCircle2, ChevronRight, Activity, Leaf, Sparkles,
+  Smartphone, Download, ExternalLink
 } from 'lucide-react';
 
 interface HomePageProps {
   setCurrentTab: (tab: string) => void;
+  onOpenDownload?: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ setCurrentTab }) => {
+export const HomePage: React.FC<HomePageProps> = ({ setCurrentTab, onOpenDownload }) => {
   return (
     <div className="space-y-16 py-8">
       {/* Hero Section */}
@@ -37,6 +39,15 @@ export const HomePage: React.FC<HomePageProps> = ({ setCurrentTab }) => {
               <Camera className="w-5 h-5" />
               <span>Detect Disease</span>
             </button>
+            {onOpenDownload && (
+              <button
+                onClick={onOpenDownload}
+                className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 shadow-md shadow-slate-900/20 transition active:scale-95 border border-slate-700"
+              >
+                <Smartphone className="w-5 h-5 text-emerald-400" />
+                <span>Download Android App</span>
+              </button>
+            )}
             <button
               onClick={() => setCurrentTab('library')}
               className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-sm hover:bg-slate-50 hover:border-slate-400 transition"
@@ -171,6 +182,61 @@ export const HomePage: React.FC<HomePageProps> = ({ setCurrentTab }) => {
             <p className="text-xs text-slate-600 leading-relaxed">
               Instant access to scientific descriptions, pathogen taxonomies, and agronomic care for 20 major rice diseases and conditions.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Mobile Android App Dedicated Section */}
+      <section className="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-xl border border-emerald-700/50">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+          <div className="space-y-4 max-w-xl text-left">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-700/60 text-emerald-200 text-xs font-bold border border-emerald-600/60">
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Available for Android Phones & Tablets</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Diagnose Rice Diseases In The Field
+            </h3>
+            <p className="text-sm text-emerald-100/90 leading-relaxed">
+              Take RiceCare AI with you to your paddy fields. Download the native Android application (APK) with live camera autofocus, offline tolerance, and instant quantum VQC predictions.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              {onOpenDownload ? (
+                <button
+                  onClick={onOpenDownload}
+                  className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/25 transition active:scale-95"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Download APK for Android (8.28 MB)</span>
+                </button>
+              ) : (
+                <a
+                  href="https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases/download/v2.0.0/RiceCare-AI-v2.0.0.apk"
+                  download="RiceCare-AI-v2.0.0.apk"
+                  className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/25 transition active:scale-95"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Download APK for Android (8.28 MB)</span>
+                </a>
+              )}
+              <a
+                href="https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases/tag/v2.0.0"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 transition"
+              >
+                <span>Release Notes</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+          <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-center space-y-3 shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-400 text-slate-950 flex items-center justify-center mx-auto shadow-md">
+              <Smartphone className="w-9 h-9" />
+            </div>
+            <div className="text-sm font-bold text-white">RiceCare AI Mobile</div>
+            <div className="text-xs text-emerald-200">v2.0.0 • Android 8.0+</div>
+            <div className="text-[11px] text-emerald-300/80">Samsung • Xiaomi • Realme • OnePlus</div>
           </div>
         </div>
       </section>

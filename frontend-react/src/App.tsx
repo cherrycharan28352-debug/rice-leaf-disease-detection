@@ -64,7 +64,10 @@ export function App() {
       <main className="flex-1">
         {currentTab === 'home' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <HomePage setCurrentTab={setCurrentTab} />
+            <HomePage 
+              setCurrentTab={setCurrentTab} 
+              onOpenDownload={() => setDownloadModalOpen(true)}
+            />
           </div>
         )}
 
@@ -101,7 +104,10 @@ export function App() {
       </main>
 
       {/* Footer */}
-      <Footer setCurrentTab={setCurrentTab} />
+      <Footer 
+        setCurrentTab={setCurrentTab} 
+        onOpenDownload={() => setDownloadModalOpen(true)}
+      />
 
       {/* Authentication Modal */}
       <AuthModal
