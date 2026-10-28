@@ -49,6 +49,10 @@ frontend-react/android/local.properties
 *.apk
 *.aab
 
+# Backups
+backups/
+models/backups/
+
 # Uploads & temporary test outputs
 uploads/*
 !uploads/.gitkeep

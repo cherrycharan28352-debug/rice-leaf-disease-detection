@@ -56,6 +56,7 @@ RUN if [ ! -f ./downloads/RiceCare-AI-v2.0.0.apk ]; then \
     fi
 COPY static_reports/ ./static_reports/
 COPY translations/ ./translations/
+COPY scripts/ ./scripts/
 COPY agriversion.db .
 COPY server.py .
 COPY run.py .

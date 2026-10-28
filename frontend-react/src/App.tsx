@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
+import { AppUpdateBanner } from './components/AppUpdateBanner';
 import { FeatureStatusBanner } from './components/FeatureStatusBanner';
 import { Footer } from './components/Footer';
 import { BottomNav } from './components/BottomNav';
@@ -81,6 +82,9 @@ export function App() {
         lang={lang}
         setLang={setLang}
       />
+
+      {/* In-App Release & Update Notification Banner */}
+      <AppUpdateBanner lang={lang} onOpenDownloadModal={() => setDownloadModalOpen(true)} />
 
       {/* Real-time Online/Offline Feature Availability Banner */}
       <FeatureStatusBanner lang={lang} />

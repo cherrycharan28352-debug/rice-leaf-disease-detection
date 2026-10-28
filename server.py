@@ -30,6 +30,26 @@ import jwt
 from ml.predict import predict_rice_disease, get_inference_engine
 from ml.dataset_info import DISEASE_CLASSES, DISEASE_DETAILS
 from ml.pesticide_database import get_advisory_for_disease, get_all_advisories, VERIFICATION_CYCLE, AUTHORITY_SOURCE
+from backend.remote_config_manager import (
+    get_active_remote_config,
+    publish_remote_config,
+    get_remote_config_history,
+    rollback_remote_config,
+    init_remote_config_table
+)
+from ml.model_registry import (
+    get_active_model_info,
+    validate_candidate_model,
+    deploy_model,
+    rollback_model
+)
+from scripts.backup_manager import (
+    backup_database,
+    backup_uploads,
+    restore_database
+)
+
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "ricecare_admin_secure_key_2026")
 
 # Setup folders
 UPLOADS_DIR = os.path.join(ROOT_DIR, "uploads")
@@ -146,20 +166,112 @@ def startup_event():
         print(f"[RiceCare AI] Startup model loading warning: {e}")
 
 
+def verify_admin_key(x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key")):
+    if not x_admin_key or x_admin_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorized: Invalid admin credentials.")
+    return True
+
+
 # ==========================================
-# 1. System & Health Endpoints
+# 1. System, Health & Remote Config Endpoints
 # ==========================================
 
 @app.get("/api/health")
+@app.get("/api/v1/health")
 def health_check():
+    model_info = get_active_model_info()
+    cfg = get_active_remote_config()
     return {
         "status": "healthy",
         "app": "RiceCare AI — Rice Leaf Disease Detection",
         "version": "2.0.0",
         "model_architecture": "HybridCNNPCAVQC (Quantum-Classical CNN + PCA + VQC)",
+        "model_version": model_info.get("version", "v2.0.0-quantum"),
+        "remote_config_version": cfg.get("config_version"),
         "classes_supported": len(DISEASE_CLASSES),
+        "database_status": "connected" if os.path.exists(DB_PATH) else "unavailable",
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+@app.get("/api/remote-config")
+@app.get("/api/v1/remote-config")
+def get_remote_configuration():
+    """Returns active versioned remote configuration for mobile app & web."""
+    return get_active_remote_config()
+
+
+@app.get("/api/app-version")
+@app.get("/api/v1/app-version")
+def get_application_version_info():
+    """Provides in-app update check details for Google Play and Direct APK."""
+    cfg = get_active_remote_config()
+    return cfg.get("app_version", {
+        "latest_version": "2.0.0",
+        "min_supported_version": "1.0.0",
+        "apk_download_url": "/downloads/RiceCare-AI-v2.0.0.apk",
+        "play_store_url": "https://play.google.com/store/apps/details?id=com.ricecare.ai",
+        "force_update": False,
+        "release_notes_en": "RiceCare AI production update.",
+        "release_notes_kn": "ರೈಸ್‌ಕೇರ್ ಎಐ ಹೊಸ ನವೀಕರಣ ಲಭ್ಯವಿದೆ."
+    })
+
+
+@app.post("/api/v1/admin/remote-config/publish")
+def publish_new_remote_configuration(payload: dict, authorized: bool = Depends(verify_admin_key)):
+    """Publish a new remote configuration version without rebuilding the Android app."""
+    try:
+        updated = publish_remote_config(payload, published_by="admin_api")
+        return {"success": True, "message": "Remote configuration published successfully", "config": updated}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/v1/admin/remote-config/history")
+def list_remote_configuration_history(authorized: bool = Depends(verify_admin_key)):
+    """Retrieve historical published configuration versions for rollback."""
+    return {"history": get_remote_config_history()}
+
+
+@app.post("/api/v1/admin/remote-config/rollback")
+def rollback_remote_configuration(target_version: str = Query(...), authorized: bool = Depends(verify_admin_key)):
+    """Roll back to a previous configuration version."""
+    try:
+        restored = rollback_remote_config(target_version)
+        return {"success": True, "message": f"Rolled back to {target_version}", "config": restored}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/v1/model/info")
+def get_model_information():
+    """Retrieve active AI model version and verification details."""
+    return get_active_model_info()
+
+
+@app.post("/api/v1/admin/model/rollback")
+def rollback_ai_model(authorized: bool = Depends(verify_admin_key)):
+    """Roll back AI model checkpoint to previous verified release."""
+    try:
+        res = rollback_model()
+        return {"success": True, "message": "Model rolled back successfully", "details": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/v1/admin/backup/create")
+def trigger_system_backup(label: str = "manual_api", authorized: bool = Depends(verify_admin_key)):
+    """Trigger atomic SQLite database and uploads media backup."""
+    try:
+        db_res = backup_database(label=label)
+        up_res = backup_uploads(label=label)
+        return {
+            "success": True,
+            "database_backup": db_res,
+            "uploads_backup": up_res
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Backup failed: {str(e)}")
 
 
 # ==========================================
@@ -339,6 +451,7 @@ def get_disease(code_or_name: str):
 # ==========================================
 
 @app.get("/api/advisories")
+@app.get("/api/v1/advisories")
 def list_advisories():
     """Returns all 20 verified CIBRC / UAS disease management and pesticide advisories."""
     return {
@@ -349,6 +462,7 @@ def list_advisories():
 
 
 @app.get("/api/advisories/{disease_name}")
+@app.get("/api/v1/advisories/{disease_name}")
 def get_single_advisory(disease_name: str):
     """Returns structured verified advisory for a specific rice leaf condition."""
     adv = get_advisory_for_disease(disease_name)
@@ -371,6 +485,7 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 MAX_FILE_SIZE = 16 * 1024 * 1024  # 16 MB
 
 @app.post("/api/predict")
+@app.post("/api/v1/predict")
 async def predict_leaf(
     file: UploadFile = File(...),
     user: Optional[dict] = Depends(get_current_user_optional)
@@ -500,6 +615,7 @@ async def predict_leaf(
     # 7. Formulate structured response
     return {
         "success": True,
+        "model_version": get_active_model_info().get("version", "v2.0.0-quantum"),
         "unreliable": is_unreliable,
         "unreliable_message_en": unreliable_msg_en if is_unreliable else None,
         "unreliable_message_kn": unreliable_msg_kn if is_unreliable else None,

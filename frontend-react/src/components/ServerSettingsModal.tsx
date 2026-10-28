@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Settings, Globe, Check, AlertCircle, X, RefreshCw, Server, Wifi, Volume2, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, Globe, Check, AlertCircle, X, RefreshCw, Server, Wifi, Volume2, ShieldCheck, Sparkles } from 'lucide-react';
 import { SupportedLanguage, UI_TEXT } from '../translations';
+import { remoteConfigService } from '../services/remoteConfig';
+import { DEFAULT_PRODUCTION_API_URL } from '../services/api';
 
 interface ServerSettingsModalProps {
   isOpen: boolean;
@@ -19,7 +21,21 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
   const [serverUrl, setServerUrl] = useState(currentBase);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [syncingConfig, setSyncingConfig] = useState(false);
+  const [configVersion, setConfigVersion] = useState(remoteConfigService.getConfig().config_version);
+  const [lastSync, setLastSync] = useState(remoteConfigService.getLastSyncTime());
   const t = UI_TEXT[lang];
+
+  const handleSyncRemoteConfig = async () => {
+    setSyncingConfig(true);
+    try {
+      const cfg = await remoteConfigService.fetchRemoteConfig();
+      setConfigVersion(cfg.config_version);
+      setLastSync(remoteConfigService.getLastSyncTime());
+    } finally {
+      setSyncingConfig(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -155,11 +171,56 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
             </span>
           </div>
 
-          {/* 3. Server URL (for advanced users / mobile config) */}
+          {/* 3. Remote Content & Configuration Updates (Zero Reinstall) */}
+          <div className="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-200/70 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-emerald-600" />
+                <span className="font-bold text-slate-900 text-xs">
+                  {lang === 'kn' ? 'ರಿಮೋಟ್ ಮಾಹಿತಿ ಮತ್ತು ಸಲಹೆಗಳು' : 'Remote Advisory & Content'}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded-full border border-emerald-200 text-emerald-800 font-bold">
+                v{configVersion}
+              </span>
+            </div>
+            
+            <p className="text-[11px] text-slate-600">
+              {lang === 'kn' 
+                ? 'ಕೀಟನಾಶಕಗಳು, ಬೆಳೆ ಸಲಹೆಗಳು ಮತ್ತು ಪ್ರಕಟಣೆಗಳು ಹೊಸ ಅಪ್ಲಿಕೇಶನ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡದೆಯೇ ತಾನಾಗಿಯೇ ಅಪ್‌ಡೇಟ್ ಆಗುತ್ತವೆ.'
+                : 'Pesticides, advisories, and announcements update automatically without reinstalling the app.'}
+            </p>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[10px] text-slate-500">
+                {lastSync ? `${lang === 'kn' ? 'ಕೊನೆಯ ಸಿಂಕ್:' : 'Last sync:'} ${new Date(lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Default'}
+              </span>
+              <button
+                type="button"
+                onClick={handleSyncRemoteConfig}
+                disabled={syncingConfig}
+                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] flex items-center space-x-1 shadow-xs transition"
+              >
+                <RefreshCw className={`w-3 h-3 ${syncingConfig ? 'animate-spin' : ''}`} />
+                <span>{syncingConfig ? 'Syncing...' : (lang === 'kn' ? 'ಈಗ ಸಿಂಕ್ ಮಾಡಿ' : 'Sync Now')}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 4. Server URL (for advanced users / mobile config) */}
           <div className="pt-2 border-t border-slate-100 space-y-2">
-            <label className="block font-semibold text-slate-800 text-[11px]">
-              {lang === 'kn' ? 'ಸರ್ವರ್ ಲಿಂಕ್ (ಐಚ್ಛಿಕ):' : 'Backend Server URL (Optional):'}
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block font-semibold text-slate-800 text-[11px]">
+                {lang === 'kn' ? 'ಸರ್ವರ್ ಲಿಂಕ್ (ಐಚ್ಛಿಕ):' : 'Backend Server URL (Optional):'}
+              </label>
+              <button
+                type="button"
+                onClick={() => setServerUrl(DEFAULT_PRODUCTION_API_URL)}
+                className="text-[10px] text-emerald-700 font-bold hover:underline"
+              >
+                {lang === 'kn' ? 'ಕ್ಲೌಡ್ ಸರ್ವರ್ ಬಳಸಿ' : 'Use Cloud Production'}
+              </button>
+            </div>
             <input
               type="text"
               value={serverUrl}

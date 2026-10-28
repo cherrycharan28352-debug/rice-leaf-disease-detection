@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">RiceCare AI — Rice Leaf Disease Detection</string>
-    <string name="title_activity_main">RiceCare AI — Rice Leaf Disease Detection</string>
+    <string name="app_name">RiceCare AI — ಭತ್ತದ ರೋಗ ಪತ್ತೆ</string>
+    <string name="title_activity_main">RiceCare AI — ಭತ್ತದ ರೋಗ ಪತ್ತೆ</string>
     <string name="package_name">com.ricecare.ai</string>
     <string name="custom_url_scheme">com.ricecare.ai</string>
 </resources>

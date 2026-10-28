@@ -1,33 +1,32 @@
-import { PredictionResult, DiseaseItem, DashboardStats, HistoryRecord, UserProfile, PesticideAdvisory } from '../types';
+import { PredictionResult, DiseaseItem, DashboardStats, HistoryRecord, UserProfile, PesticideAdvisory, RemoteConfig, AppVersionInfo } from '../types';
 import { networkService } from './network';
 
-export const getApiBase = (): string => {
+export const DEFAULT_PRODUCTION_API_URL = 'https://equations-tables-weekly-aggregate.trycloudflare.com';
+
+export const getApiRoot = (): string => {
   const custom = localStorage.getItem('ricecare_api_url');
-  if (custom) {
-    return custom.replace(/\/$/, '') + '/api';
+  if (custom && custom.trim() !== '') {
+    return custom.trim().replace(/\/$/, '');
   }
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/$/, '') + '/api';
+  if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim() !== '') {
+    return import.meta.env.VITE_API_URL.trim().replace(/\/$/, '');
   }
   // If running inside native Android WebView (Capacitor file:// or capacitor://)
   if (typeof window !== 'undefined' && (window.location.protocol === 'capacitor:' || window.location.protocol === 'file:')) {
-    return 'http://10.233.122.153:8000/api';
+    return DEFAULT_PRODUCTION_API_URL;
   }
-  return '/api';
+  if (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
+    return window.location.origin;
+  }
+  return DEFAULT_PRODUCTION_API_URL;
+};
+
+export const getApiBase = (): string => {
+  return `${getApiRoot()}/api`;
 };
 
 export const getUploadsBase = (): string => {
-  const custom = localStorage.getItem('ricecare_api_url');
-  if (custom) {
-    return custom.replace(/\/$/, '');
-  }
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
-  }
-  if (typeof window !== 'undefined' && (window.location.protocol === 'capacitor:' || window.location.protocol === 'file:')) {
-    return 'http://10.233.122.153:8000';
-  }
-  return '';
+  return getApiRoot();
 };
 
 function getAuthHeader(): Record<string, string> {
@@ -43,6 +42,10 @@ function resolveAssetUrl(url: string | null | undefined): string | null {
 }
 
 export const api = {
+  getBaseUrl(): string {
+    return getApiRoot();
+  },
+
   async getHealth() {
     const res = await fetch(`${getApiBase()}/health`);
     return res.json();

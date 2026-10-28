@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, CheckCircle2, Cloud, HardDrive, RefreshCw } from 'lucide-react';
 import { networkService } from '../services/network';
+import { remoteConfigService } from '../services/remoteConfig';
 import { SupportedLanguage } from '../translations';
 
 interface FeatureStatusBannerProps {
@@ -9,16 +10,24 @@ interface FeatureStatusBannerProps {
 
 export const FeatureStatusBanner: React.FC<FeatureStatusBannerProps> = ({ lang }) => {
   const [isOnline, setIsOnline] = useState(networkService.isOnline());
-  const [lastSync, setLastSync] = useState<string | null>(networkService.getLastSyncTime());
+  const [lastSync, setLastSync] = useState<string | null>(remoteConfigService.getLastSyncTime() || networkService.getLastSyncTime());
   const [queueCount, setQueueCount] = useState(networkService.getQueuedOfflineScans().length);
+  const [configVersion, setConfigVersion] = useState(remoteConfigService.getConfig().config_version);
 
   useEffect(() => {
-    const unsubscribe = networkService.subscribe((online) => {
+    const unsubNet = networkService.subscribe((online) => {
       setIsOnline(online);
-      setLastSync(networkService.getLastSyncTime());
+      setLastSync(remoteConfigService.getLastSyncTime() || networkService.getLastSyncTime());
       setQueueCount(networkService.getQueuedOfflineScans().length);
     });
-    return unsubscribe;
+    const unsubCfg = remoteConfigService.subscribe((cfg) => {
+      setConfigVersion(cfg.config_version);
+      setLastSync(remoteConfigService.getLastSyncTime() || networkService.getLastSyncTime());
+    });
+    return () => {
+      unsubNet();
+      unsubCfg();
+    };
   }, []);
 
   const formattedSyncTime = lastSync 
@@ -53,7 +62,16 @@ export const FeatureStatusBanner: React.FC<FeatureStatusBannerProps> = ({ lang }
         <span className="flex items-center space-x-1 text-[11px] text-slate-700">
           <HardDrive className="w-3 h-3 text-emerald-600" />
           <span>
-            {lang === 'kn' ? 'ಆಫ್‌ಲೈನ್ ರೋಗ ಮಾಹಿತಿ ಸಿದ್ಧ' : 'Offline Guides Cached'}
+            {lang === 'kn' ? 'ಆಫ್‌ಲೈನ್ ಮಾಹಿತಿ ಸಿದ್ಧ' : 'Offline Guides Cached'}
+          </span>
+        </span>
+
+        <span className="text-slate-400 hidden sm:inline">•</span>
+
+        <span className="hidden sm:flex items-center space-x-1 text-[11px] text-slate-500">
+          <RefreshCw className="w-2.5 h-2.5 text-slate-400" />
+          <span>
+            {lang === 'kn' ? `ಸಿಂಕ್: ${formattedSyncTime}` : `Sync: ${formattedSyncTime}`}
           </span>
         </span>
       </div>

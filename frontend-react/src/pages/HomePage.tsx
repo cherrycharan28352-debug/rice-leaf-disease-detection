@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Camera, Image as ImageIcon, BookOpen, Volume2, VolumeX, 
   Smartphone, Download, ShieldCheck, Sparkles, CheckCircle2,
-  ArrowRight, Info, HelpCircle
+  ArrowRight, Info, HelpCircle, BellRing
 } from 'lucide-react';
 import { SupportedLanguage, UI_TEXT } from '../translations';
 import { speechService } from '../utils/speech';
+import { remoteConfigService } from '../services/remoteConfig';
+import { RemoteAnnouncement } from '../types';
 
 interface HomePageProps {
   setCurrentTab: (tab: string) => void;
@@ -24,6 +26,19 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   const t = UI_TEXT[lang];
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [remoteConfig, setRemoteConfig] = useState(remoteConfigService.getConfig());
+
+  useEffect(() => {
+    const unsub = remoteConfigService.subscribe((cfg) => {
+      setRemoteConfig(cfg);
+    });
+    return unsub;
+  }, []);
+
+  const activeAnnouncements = (remoteConfig.announcements || []).filter(a => a.active);
+
+  const homeHeading = (lang === 'kn' ? remoteConfig.home_messages?.subtitle_kn : lang === 'hi' ? remoteConfig.home_messages?.subtitle_hi : remoteConfig.home_messages?.subtitle_en) || t.home_heading;
+  const homeTagline = (lang === 'kn' ? remoteConfig.home_messages?.tagline_kn : lang === 'hi' ? remoteConfig.home_messages?.tagline_hi : remoteConfig.home_messages?.tagline_en) || t.home_instruction;
 
   const sampleLeaves = [
     {
@@ -155,10 +170,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               RiceCare AI
             </h1>
             <p className="text-xl sm:text-2xl font-bold text-amber-300">
-              {t.home_heading}
+              {homeHeading}
             </p>
             <p className="text-sm sm:text-base text-emerald-100 max-w-xl mx-auto leading-relaxed">
-              {t.home_instruction}
+              {homeTagline}
             </p>
           </div>
 
@@ -167,6 +182,28 @@ export const HomePage: React.FC<HomePageProps> = ({
             <HelpCircle className="w-5 h-5 text-amber-300 shrink-0" />
             <span>💡 <strong>{lang === 'kn' ? 'ಸಲಹೆ:' : lang === 'hi' ? 'सुझाव:' : 'Tip:'}</strong> {t.home_tip}</span>
           </div>
+
+          {/* Active Remote Agricultural Announcements */}
+          {activeAnnouncements.length > 0 && (
+            <div className="space-y-2 max-w-xl mx-auto text-left">
+              {activeAnnouncements.map((ann) => (
+                <div 
+                  key={ann.id}
+                  className="bg-amber-400 text-slate-950 rounded-2xl p-3.5 shadow-lg flex items-start space-x-3 border-2 border-amber-300 animate-in fade-in"
+                >
+                  <BellRing className="w-5 h-5 text-emerald-950 shrink-0 mt-0.5 animate-bounce" />
+                  <div className="text-xs">
+                    <span className="font-black block text-sm">
+                      {lang === 'kn' ? ann.title_kn : lang === 'hi' ? (ann.title_hi || ann.title_en) : ann.title_en}
+                    </span>
+                    <span className="font-semibold text-slate-900 leading-snug block mt-0.5">
+                      {lang === 'kn' ? ann.message_kn : lang === 'hi' ? (ann.message_hi || ann.message_en) : ann.message_en}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Five Large Touch-Friendly Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 max-w-4xl mx-auto">

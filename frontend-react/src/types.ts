@@ -33,6 +33,7 @@ export interface PesticideAdvisory {
 
 export interface PredictionResult {
   success: boolean;
+  model_version?: string;
   unreliable?: boolean;
   unreliable_message_en?: string | null;
   unreliable_message_kn?: string | null;
@@ -116,4 +117,62 @@ export interface UserProfile {
   location?: string;
   phone?: string;
   created_at?: string;
+}
+
+export interface AppVersionInfo {
+  latest_version: string;
+  min_supported_version: string;
+  apk_download_url: string;
+  play_store_url: string;
+  force_update: boolean;
+  release_notes_en: string;
+  release_notes_kn: string;
+}
+
+export interface RemoteAnnouncement {
+  id: string;
+  active: boolean;
+  type: 'advisory' | 'warning' | 'info';
+  priority: 'high' | 'normal';
+  title_en: string;
+  title_kn: string;
+  title_hi?: string;
+  message_en: string;
+  message_kn: string;
+  message_hi?: string;
+}
+
+export interface RemoteConfig {
+  schema_version: string;
+  config_version: string;
+  published_at: string;
+  checksum: string;
+  app_version: AppVersionInfo;
+  announcements: RemoteAnnouncement[];
+  home_messages: {
+    title_kn: string;
+    subtitle_kn: string;
+    tagline_kn: string;
+    title_en: string;
+    subtitle_en: string;
+    tagline_en: string;
+    title_hi: string;
+    subtitle_hi: string;
+    tagline_hi: string;
+  };
+  feature_flags: {
+    enable_offline_queue: boolean;
+    enable_audio_tts: boolean;
+    enable_sample_picker: boolean;
+    enable_pesticide_safety_warnings: boolean;
+    max_upload_size_mb: number;
+  };
+  support_contacts: {
+    kisan_call_center: string;
+    karnataka_agri_helpdesk: string;
+    raitha_samparka_kendra: string;
+  };
+  content_overrides?: Record<string, string>;
+  disease_overrides?: Record<string, any>;
+  pesticide_overrides?: Record<string, any>;
 }

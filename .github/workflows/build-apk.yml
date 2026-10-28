@@ -42,21 +42,24 @@ jobs:
       - name: Grant Execute Permission to Gradle Wrapper
         run: chmod +x frontend-react/android/gradlew
 
-      - name: Build Android Debug APK
+      - name: Build Android Direct APK & Google Play AAB Bundle
         run: |
           cd frontend-react/android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug bundleDebug --no-daemon
 
-      - name: Rename APK for Easy Distribution
+      - name: Stage Artifacts for Distribution
         run: |
           mkdir -p release-output
           cp frontend-react/android/app/build/outputs/apk/debug/app-debug.apk release-output/RiceCare-AI-v2.0.0.apk
+          cp frontend-react/android/app/build/outputs/bundle/debug/app-debug.aab release-output/RiceCare-AI-v2.0.0.aab
 
-      - name: Upload Debug APK Artifact
+      - name: Upload APK and AAB Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: RiceCare-AI-v2.0.0-APK
-          path: release-output/RiceCare-AI-v2.0.0.apk
+          name: RiceCare-AI-v2.0.0-Android-Packages
+          path: |
+            release-output/RiceCare-AI-v2.0.0.apk
+            release-output/RiceCare-AI-v2.0.0.aab
           retention-days: 30
 
       - name: Create or Update GitHub Release
@@ -64,20 +67,24 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
           tag_name: v2.0.0
-          name: "RiceCare AI v2.0.0 — Android APK Release"
-          files: release-output/RiceCare-AI-v2.0.0.apk
+          name: "RiceCare AI v2.0.0 — Android APK & Play Store AAB Bundle"
+          files: |
+            release-output/RiceCare-AI-v2.0.0.apk
+            release-output/RiceCare-AI-v2.0.0.aab
           draft: false
           prerelease: false
           body: |
-            ## 🌾 RiceCare AI — Android Application Release (v2.0.0)
+            ## 🌾 RiceCare AI — ಭತ್ತದ ರೋಗ ಪತ್ತೆ (v2.0.0)
 
-            Direct installation package for Android smartphones and tablets.
+            Complete production release for Android smartphones and tablets.
 
-            ### 📥 Download Link
-            Download **`RiceCare-AI-v2.0.0.apk`** from the Assets below and tap to install on your Android device.
+            ### 📦 Packages Included:
+            1. **`RiceCare-AI-v2.0.0.apk`**: Direct installation package for testing and sideloading on any Android device.
+            2. **`RiceCare-AI-v2.0.0.aab`**: Official Android App Bundle formatted for Google Play Console publication.
 
-            ### 📋 What's Included:
-            - **Live Camera & Gallery Diagnosis:** Capture leaf photos in paddy fields or upload from gallery.
-            - **20 Rice Conditions:** Powered by PyTorch Hybrid CNN + Quantum VQC.
-            - **Lesion Severity & Symptoms:** Automatic tissue area calculation and cultural care advice.
-            - **Offline Tolerant:** Reconnects seamlessly to your cloud backend.
+            ### 📋 Key Features:
+            - **Kannada First:** Intuitive interface in Kannada (default), English, and Hindi.
+            - **Real AI Inference:** Quantum-Classical CNN Hybrid with 20 rice conditions.
+            - **CIBRC Verified Pesticide Safety:** Active ingredients, dosage, PHI, REI, and non-chemical cultural care.
+            - **Zero Reinstall Updates:** Remote content, announcements, and disease advisories update dynamically.
+            - **Resilient Offline Architecture:** Offline cached disease guides, history, and photo queue.

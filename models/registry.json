@@ -1,0 +1,18 @@
+{
+  "active_version": "v2.0.0-quantum",
+  "active_weights_file": "ricenet_weights.pth",
+  "active_sha256": "75ee236f8bae87183ee605a5460d9e8530d17c78835101805202f935f706da48",
+  "classes_count": 20,
+  "framework": "PyTorch 2.14 + PennyLane 4-Qubit VQC",
+  "previous_version": null,
+  "previous_weights_file": null,
+  "history": [
+    {
+      "version": "v2.0.0-quantum",
+      "deployed_at": "2026-10-28T18:32:24.296357+00:00",
+      "sha256": "75ee236f8bae87183ee605a5460d9e8530d17c78835101805202f935f706da48",
+      "status": "active",
+      "notes": "Base trained HybridCNNPCAVQC model checkpoint"
+    }
+  ]
+}
