@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Search, BookOpen, Microscope, ShieldCheck, Thermometer, ShieldAlert, 
-  X, ArrowRight, ExternalLink, Sparkles, Filter, Camera
+  Search, BookOpen, Volume2, VolumeX, ShieldCheck, PhoneCall, 
+  X, ArrowRight, Activity, Filter, HelpCircle
 } from 'lucide-react';
 import { api } from '../services/api';
 import { DiseaseItem } from '../types';
+import { SupportedLanguage, UI_TEXT, DISEASE_TRANSLATIONS } from '../translations';
+import { speechService } from '../utils/speech';
 
 interface DiseaseLibraryPageProps {
   onSelectSampleForDetection: (sampleFile: string) => void;
   preselectedDisease?: string | null;
+  lang: SupportedLanguage;
 }
 
 export const DiseaseLibraryPage: React.FC<DiseaseLibraryPageProps> = ({
   onSelectSampleForDetection,
   preselectedDisease,
+  lang,
 }) => {
+  const t = UI_TEXT[lang];
   const [diseases, setDiseases] = useState<DiseaseItem[]>([]);
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState<string>('All');
   const [selectedDisease, setSelectedDisease] = useState<DiseaseItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   useEffect(() => {
     loadDiseases();
@@ -44,238 +49,263 @@ export const DiseaseLibraryPage: React.FC<DiseaseLibraryPageProps> = ({
     }
   };
 
-  const pathogenFilters = ['All', 'Fungal', 'Bacterial', 'Viral', 'Insect', 'Healthy'];
-
   const filteredDiseases = diseases.filter((d) => {
-    const matchesSearch =
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.scientific_name.toLowerCase().includes(search.toLowerCase()) ||
-      d.description.toLowerCase().includes(search.toLowerCase());
+    const trans = DISEASE_TRANSLATIONS[d.name];
+    const knName = trans ? trans.kannada_name.toLowerCase() : '';
+    const hiName = trans ? trans.hindi_name.toLowerCase() : '';
+    const enName = d.name.toLowerCase();
+    const q = search.toLowerCase();
 
-    if (filterType === 'All') return matchesSearch;
-    if (filterType === 'Fungal') return matchesSearch && d.pathogen_type.toLowerCase().includes('fungal');
-    if (filterType === 'Bacterial') return matchesSearch && d.pathogen_type.toLowerCase().includes('bacterial');
-    if (filterType === 'Viral') return matchesSearch && d.pathogen_type.toLowerCase().includes('viral');
-    if (filterType === 'Insect') return matchesSearch && (d.pathogen_type.toLowerCase().includes('insect') || d.pathogen_type.toLowerCase().includes('pest') || d.name.includes('Damage') || d.name.includes('Hispa'));
-    if (filterType === 'Healthy') return matchesSearch && d.pathogen_type.toLowerCase().includes('healthy');
-
-    return matchesSearch;
+    return enName.includes(q) || knName.includes(q) || hiName.includes(q);
   });
 
+  const handleAudioSpeak = (disease: DiseaseItem) => {
+    if (isPlayingAudio) {
+      speechService.stop();
+      setIsPlayingAudio(false);
+      return;
+    }
+
+    const trans = DISEASE_TRANSLATIONS[disease.name];
+    let speechText = "";
+    if (trans) {
+      if (lang === 'kn') {
+        speechText = `ರೋಗದ ಹೆಸರು: ${trans.kannada_name}. ಲಕ್ಷಣಗಳು: ${trans.symptoms.kn}. ನಿರ್ವಹಣೆ: ${trans.next_steps.kn}. ತಡೆಗಟ್ಟುವಿಕೆ: ${trans.prevention.kn}.`;
+      } else if (lang === 'hi') {
+        speechText = `रोग: ${trans.hindi_name}. लक्षण: ${trans.symptoms.hi}. उपाय: ${trans.next_steps.hi}.`;
+      } else {
+        speechText = `Disease: ${trans.english_name}. Symptoms: ${trans.symptoms.en}. Management: ${trans.next_steps.en}.`;
+      }
+    } else {
+      speechText = disease.name;
+    }
+
+    setIsPlayingAudio(true);
+    speechService.speak(speechText, {
+      lang: lang,
+      onEnd: () => setIsPlayingAudio(false),
+      onError: () => setIsPlayingAudio(false)
+    });
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-          <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Botanical Rice Pathology Encyclopedia</span>
-        </div>
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Rice Foliage Disease Library
-        </h1>
-        <p className="text-sm text-slate-600 max-w-xl mx-auto">
-          Explore comprehensive diagnostic dossiers, pathogen taxonomy, and recommended agronomic management for 20 major rice diseases and conditions.
-        </p>
-      </div>
-
-      {/* Search & Filter Controls */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by disease name, scientific taxon, or symptoms..."
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-emerald-500"
-            />
-          </div>
+    <div className="space-y-6 py-4 sm:py-8 max-w-6xl mx-auto px-4 pb-24 sm:pb-12 text-left">
+      
+      {/* Title & Search Bar */}
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+            {lang === 'kn' ? '🌿 ಭತ್ತದ ರೋಗಗಳ ಮಾಹಿತಿ ಕೈಪಿಡಿ' : lang === 'hi' ? '🌿 धान के प्रमुख रोग' : '🌿 Rice Disease Library'}
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600">
+            {lang === 'kn'
+              ? 'ಕರ್ನಾಟಕದ ಪ್ರಮುಖ 20 ಭತ್ತದ ರೋಗಗಳು, ಲಕ್ಷಣಗಳು ಮತ್ತು ನಿರ್ವಹಣಾ ಕ್ರಮಗಳು.'
+              : '20 major rice diseases, visible symptoms, and certified management practices.'}
+          </p>
         </div>
 
-        {/* Filter Chips */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-          <span className="text-slate-400 font-semibold mr-1 flex items-center space-x-1">
-            <Filter className="w-3.5 h-3.5" />
-            <span>Pathogen:</span>
-          </span>
-          {pathogenFilters.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setFilterType(tag)}
-              className={`px-3 py-1 rounded-full font-semibold transition ${
-                filterType === tag
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
+        {/* Search input */}
+        <div className="relative max-w-md">
+          <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={
+              lang === 'kn'
+                ? 'ರೋಗದ ಹೆಸರು ಹುಡುಕಿ (ಉದಾ: ಬೆಂಕಿ ರೋಗ, ಬ್ಲಾಸ್ಟ್)...'
+                : 'Search disease name (e.g. Blast, Blight)...'
+            }
+            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-2xl text-xs sm:text-sm shadow-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+          />
         </div>
       </div>
 
-      {/* Disease Cards Grid */}
+      {/* Grid of 20 Diseases */}
       {loading ? (
-        <div className="py-20 text-center text-slate-400">Loading botanical library...</div>
+        <div className="p-12 text-center text-slate-400 font-bold text-sm">
+          {lang === 'kn' ? 'ಮಾಹಿತಿ ಲೋಡ್ ಆಗುತ್ತಿದೆ...' : 'Loading disease library...'}
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {filteredDiseases.map((d) => (
-            <div
-              key={d.id}
-              onClick={() => setSelectedDisease(d)}
-              className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-md hover:border-emerald-400 transition cursor-pointer flex flex-col group"
-            >
-              <div className="aspect-4/3 bg-slate-100 overflow-hidden relative">
-                {d.sample_image_url ? (
-                  <img
-                    src={d.sample_image_url}
-                    alt={d.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-300">
-                    <Microscope className="w-8 h-8" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredDiseases.map((d) => {
+            const trans = DISEASE_TRANSLATIONS[d.name];
+            const knName = trans ? trans.kannada_name : d.name;
+            const hiName = trans ? trans.hindi_name : d.name;
+            const title = lang === 'kn' ? knName : lang === 'hi' ? hiName : d.name;
+            const subTitle = lang === 'kn' ? d.name : knName;
+
+            return (
+              <div
+                key={d.id}
+                onClick={() => setSelectedDisease(d)}
+                className="cursor-pointer group p-5 bg-white rounded-3xl border border-slate-200/90 hover:border-emerald-500 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-3"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold">
+                      {d.pathogen_type}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAudioSpeak(d);
+                      }}
+                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-800 transition"
+                      title="Listen"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                    </button>
                   </div>
-                )}
-                <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/70 backdrop-blur-md text-white">
-                  {d.pathogen_type.split(' ')[0]}
-                </div>
-              </div>
 
-              <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition">
-                    {d.name}
+                  <h3 className="text-base font-black text-slate-900 group-hover:text-emerald-700 transition leading-snug">
+                    {title}
                   </h3>
-                  <p className="text-[11px] italic text-slate-500 line-clamp-1 mt-0.5">
-                    {d.scientific_name}
-                  </p>
-                  <p className="text-xs text-slate-600 line-clamp-2 mt-2 leading-relaxed">
-                    {d.description}
+                  <p className="text-xs text-slate-500 font-medium">
+                    {subTitle}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-600 font-semibold">
-                  <span>View Full Dossier</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                  {trans ? trans.meaning[lang] : d.description}
+                </p>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700">
+                  <span>{lang === 'kn' ? 'ಪೂರ್ಣ ಮಾಹಿತಿ ನೋಡಿ' : 'View Full Details'}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Disease Detail Modal */}
       {selectedDisease && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200 p-6 space-y-5">
+            
             {/* Modal Header */}
-            <div className="flex justify-between items-start p-6 border-b border-slate-100 bg-emerald-50/50">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
               <div className="space-y-1">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold">
                   {selectedDisease.pathogen_type}
                 </span>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-                  {selectedDisease.name}
-                </h2>
-                <p className="text-xs italic text-slate-500 font-medium">
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900">
+                  {lang === 'kn' && DISEASE_TRANSLATIONS[selectedDisease.name]
+                    ? `${DISEASE_TRANSLATIONS[selectedDisease.name].kannada_name} (${selectedDisease.name})`
+                    : selectedDisease.name}
+                </h3>
+                <p className="text-xs font-mono text-slate-500 italic">
                   {selectedDisease.scientific_name}
                 </p>
               </div>
-              <button
-                onClick={() => setSelectedDisease(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleAudioSpeak(selectedDisease)}
+                  className={`p-2 rounded-xl transition ${
+                    isPlayingAudio ? 'bg-amber-400 text-slate-950 animate-pulse' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                  }`}
+                  title="Listen"
+                >
+                  {isPlayingAudio ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+                <button
+                  onClick={() => {
+                    speechService.stop();
+                    setIsPlayingAudio(false);
+                    setSelectedDisease(null);
+                  }}
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-5 text-xs text-slate-700 leading-relaxed">
-              {selectedDisease.sample_image_url && (
-                <div className="rounded-xl overflow-hidden aspect-21/9 bg-slate-100 border border-slate-200">
-                  <img
-                    src={selectedDisease.sample_image_url}
-                    alt={selectedDisease.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
+            {/* Disease Info Sections */}
+            {DISEASE_TRANSLATIONS[selectedDisease.name] ? (
+              (() => {
+                const tr = DISEASE_TRANSLATIONS[selectedDisease.name];
+                return (
+                  <div className="space-y-4 text-xs sm:text-sm">
+                    {/* Meaning */}
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <h4 className="font-bold text-slate-900 flex items-center space-x-1.5">
+                        <BookOpen className="w-4 h-4 text-emerald-700" />
+                        <span>{t.section_meaning}</span>
+                      </h4>
+                      <p className="text-slate-700 leading-relaxed">{tr.meaning[lang]}</p>
+                    </div>
 
-              <div>
-                <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-1">
-                  Botanical Description:
-                </h4>
-                <p className="bg-slate-50 p-3 rounded-lg border border-slate-200/80">
-                  {selectedDisease.description}
-                </p>
-              </div>
+                    {/* Symptoms */}
+                    <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-1">
+                      <h4 className="font-bold text-slate-900 flex items-center space-x-1.5">
+                        <HelpCircle className="w-4 h-4 text-emerald-700" />
+                        <span>{t.section_symptoms}</span>
+                      </h4>
+                      <p className="text-slate-700 leading-relaxed">{tr.symptoms[lang]}</p>
+                    </div>
 
-              <div>
-                <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-1 flex items-center space-x-1.5 text-emerald-800">
-                  <Microscope className="w-4 h-4 text-emerald-600" />
-                  <span>Observed Symptoms:</span>
-                </h4>
-                <p className="bg-slate-50 p-3 rounded-lg border border-slate-200/80">
-                  {selectedDisease.symptoms}
-                </p>
-              </div>
+                    {/* Next Steps / Management */}
+                    <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-1">
+                      <h4 className="font-bold text-emerald-950 flex items-center space-x-1.5">
+                        <Activity className="w-4 h-4 text-emerald-700" />
+                        <span>{t.section_next_steps}</span>
+                      </h4>
+                      <p className="text-emerald-950 leading-relaxed font-medium">{tr.next_steps[lang]}</p>
+                    </div>
 
-              <div>
-                <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-1 flex items-center space-x-1.5 text-amber-800">
-                  <Thermometer className="w-4 h-4 text-amber-600" />
-                  <span>Favorable Conditions & Causes:</span>
-                </h4>
-                <p className="bg-slate-50 p-3 rounded-lg border border-slate-200/80">
-                  {selectedDisease.favorable_conditions}
-                </p>
-              </div>
+                    {/* Prevention */}
+                    <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-1">
+                      <h4 className="font-bold text-slate-900 flex items-center space-x-1.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                        <span>{t.section_prevention}</span>
+                      </h4>
+                      <p className="text-slate-700 leading-relaxed">{tr.prevention[lang]}</p>
+                    </div>
 
-              <div>
-                <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-1 flex items-center space-x-1.5 text-emerald-800">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Preventive Cultural Practices:</span>
-                </h4>
-                <p className="bg-slate-50 p-3 rounded-lg border border-slate-200/80">
-                  {selectedDisease.prevention}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-1 flex items-center space-x-1.5 text-emerald-800">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Recommended Crop Management:</span>
-                </h4>
-                <p className="bg-slate-50 p-3 rounded-lg border border-slate-200/80">
-                  {selectedDisease.management}
-                </p>
-              </div>
-
-              {selectedDisease.expert_consultation && (
-                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 flex items-start space-x-2">
-                  <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold">Expert Consultation Threshold: </span>
-                    {selectedDisease.expert_consultation}
+                    {/* Expert Advice */}
+                    <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1">
+                      <h4 className="font-bold text-amber-950 flex items-center space-x-1.5">
+                        <PhoneCall className="w-4 h-4 text-amber-700" />
+                        <span>{t.section_expert}</span>
+                      </h4>
+                      <p className="text-amber-900 leading-relaxed">{tr.expert_advice[lang]}</p>
+                    </div>
                   </div>
+                );
+              })()
+            ) : (
+              <div className="space-y-3 text-xs sm:text-sm">
+                <p className="text-slate-700">{selectedDisease.description}</p>
+                <div className="p-3 bg-slate-50 rounded-xl">
+                  <strong>Symptoms:</strong> {selectedDisease.symptoms}
                 </div>
-              )}
-            </div>
+                <div className="p-3 bg-emerald-50 rounded-xl">
+                  <strong>Management:</strong> {selectedDisease.management}
+                </div>
+              </div>
+            )}
 
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end space-x-3">
+            {/* Modal Close Button */}
+            <div className="pt-2 flex justify-end">
               <button
-                type="button"
-                onClick={() => setSelectedDisease(null)}
-                className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                onClick={() => {
+                  speechService.stop();
+                  setIsPlayingAudio(false);
+                  setSelectedDisease(null);
+                }}
+                className="px-6 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition"
               >
-                Close
+                {lang === 'kn' ? 'ಮುಚ್ಚಿ' : 'Close'}
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };

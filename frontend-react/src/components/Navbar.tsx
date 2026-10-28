@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  Sprout, Camera, BookOpen, BarChart3, History, Info, LogIn, LogOut, 
-  Menu, X, Smartphone, Settings
+  Sprout, Camera, BookOpen, BarChart3, History, Info, 
+  Menu, X, Smartphone, Settings, Globe
 } from 'lucide-react';
 import { UserProfile } from '../types';
+import { SupportedLanguage, UI_TEXT } from '../translations';
 
 interface NavbarProps {
   currentTab: string;
@@ -13,6 +14,8 @@ interface NavbarProps {
   onLogout: () => void;
   onOpenDownload: () => void;
   onOpenSettings: () => void;
+  lang: SupportedLanguage;
+  setLang: (lang: SupportedLanguage) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,16 +26,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
   onOpenDownload,
   onOpenSettings,
+  lang,
+  setLang,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const t = UI_TEXT[lang];
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Sprout },
-    { id: 'detect', label: 'Detect Disease', icon: Camera },
-    { id: 'library', label: 'Disease Library', icon: BookOpen },
-    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-    { id: 'history', label: 'History', icon: History },
-    { id: 'about', label: 'About', icon: Info },
+    { id: 'home', label: t.nav_home, icon: Sprout },
+    { id: 'detect', label: t.nav_check, icon: Camera },
+    { id: 'library', label: t.nav_guide, icon: BookOpen },
+    { id: 'history', label: t.nav_history, icon: History },
   ];
 
   const handleTabClick = (id: string) => {
@@ -42,34 +46,35 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-xs">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
+          
           {/* Logo & Brand */}
           <div
             onClick={() => handleTabClick('home')}
-            className="flex items-center space-x-3 cursor-pointer group"
+            className="flex items-center space-x-2.5 cursor-pointer group"
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:bg-emerald-700 transition">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:bg-emerald-700 transition">
               <Sprout className="w-6 h-6 stroke-[2.2]" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
+              <div className="flex items-center space-x-1.5">
+                <span className="text-xl font-black tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
                   RiceCare<span className="text-emerald-600"> AI</span>
                 </span>
-                <span className="hidden sm:inline-flex px-2 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full">
-                  Rice Leaf Disease Detection
+                <span className="hidden md:inline-flex px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80 rounded-full">
+                  {lang === 'kn' ? 'ಭತ್ತದ ರೋಗ ಪತ್ತೆ' : 'Rice Leaf AI'}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 hidden md:block">
-                Quantum-Classical Hybrid Botanical Pathology
+              <p className="text-[11px] text-emerald-800 font-semibold hidden sm:block">
+                {t.app_subtitle}
               </p>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -77,9 +82,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => handleTabClick(item.id)}
-                  className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
                     isActive
-                      ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-xs'
+                      ? 'bg-emerald-50 text-emerald-700 shadow-xs'
                       : 'text-slate-600 hover:text-emerald-700 hover:bg-slate-50'
                   }`}
                 >
@@ -90,94 +95,62 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Action Buttons & Auth */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Download Android App Button */}
+          {/* Action Buttons: Language Selector & APK Download */}
+          <div className="flex items-center space-x-2 sm:space-x-2.5">
+            
+            {/* Quick Language Switcher */}
+            <div className="flex items-center rounded-xl bg-slate-100 p-0.5 border border-slate-200 text-xs font-bold">
+              <button
+                onClick={() => setLang('kn')}
+                className={`px-2.5 py-1 rounded-lg transition ${
+                  lang === 'kn' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="ಕನ್ನಡ"
+              >
+                ಕನ್ನಡ
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                className={`px-2 py-1 rounded-lg transition ${
+                  lang === 'en' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="English"
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLang('hi')}
+                className={`px-2 py-1 rounded-lg transition ${
+                  lang === 'hi' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="हिन्दी"
+              >
+                हिन्दी
+              </button>
+            </div>
+
+            {/* Download Android APK Button */}
             <button
               onClick={onOpenDownload}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100/70 text-xs font-bold transition shadow-xs"
+              className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-bold transition shadow-xs"
               title="Download Android APK"
             >
-              <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">Get Android App</span>
-              <span className="sm:hidden">App</span>
+              <Smartphone className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden sm:inline">ಆ್ಯಪ್ / APK</span>
+              <span className="sm:hidden">APK</span>
             </button>
 
-            {/* Server Settings Button */}
+            {/* Settings Button */}
             <button
               onClick={onOpenSettings}
-              className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
-              title="Backend Server Settings"
+              className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition"
+              title="Settings"
             >
               <Settings className="w-4 h-4" />
-            </button>
-
-            {currentUser ? (
-              <div className="flex items-center space-x-2">
-                <div className="hidden sm:flex flex-col text-right">
-                  <span className="text-xs font-bold text-slate-800 leading-tight">
-                    {currentUser.full_name}
-                  </span>
-                  <span className="text-[10px] text-emerald-600 font-medium capitalize">
-                    {currentUser.role}
-                  </span>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center font-bold text-xs">
-                  {currentUser.full_name.charAt(0).toUpperCase()}
-                </div>
-                <button
-                  onClick={onLogout}
-                  title="Sign Out"
-                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={onOpenAuth}
-                className="flex items-center space-x-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
-              </button>
-            )}
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition"
-              aria-label="Toggle Menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
       </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-100 bg-white px-4 pt-3 pb-6 space-y-1 shadow-lg animate-in slide-in-from-top duration-200">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleTabClick(item.id)}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                    : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
     </header>
   );
 };

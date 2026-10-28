@@ -5,15 +5,18 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { HistoryRecord, DiseaseItem } from '../types';
+import { SupportedLanguage, UI_TEXT, DISEASE_TRANSLATIONS } from '../translations';
 
 interface HistoryPageProps {
   onNavigateToDetect: () => void;
   onViewLibraryItem: (diseaseName: string) => void;
+  lang: SupportedLanguage;
 }
 
 export const HistoryPage: React.FC<HistoryPageProps> = ({
   onNavigateToDetect,
   onViewLibraryItem,
+  lang,
 }) => {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +24,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
+  const t = UI_TEXT[lang];
 
   useEffect(() => {
     loadHistory();
@@ -150,7 +154,11 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
-                      <h3 className="text-base font-bold text-slate-900">{item.disease_name}</h3>
+                      <h3 className="text-base font-bold text-slate-900">
+                        {lang === 'kn' && DISEASE_TRANSLATIONS[item.disease_name]
+                          ? `${DISEASE_TRANSLATIONS[item.disease_name].kannada_name} (${item.disease_name})`
+                          : item.disease_name}
+                      </h3>
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                         {item.confidence}%
                       </span>
