@@ -29,6 +29,7 @@ import jwt
 # ML Inference Engine & Dataset Knowledge Base
 from ml.predict import predict_rice_disease, get_inference_engine
 from ml.dataset_info import DISEASE_CLASSES, DISEASE_DETAILS
+from ml.pesticide_database import get_advisory_for_disease, get_all_advisories, VERIFICATION_CYCLE, AUTHORITY_SOURCE
 
 # Setup folders
 UPLOADS_DIR = os.path.join(ROOT_DIR, "uploads")
@@ -334,6 +335,35 @@ def get_disease(code_or_name: str):
 
 
 # ==========================================
+# 3.1 Verified Pesticide & Advisory Database
+# ==========================================
+
+@app.get("/api/advisories")
+def list_advisories():
+    """Returns all 20 verified CIBRC / UAS disease management and pesticide advisories."""
+    return {
+        "verification_cycle": VERIFICATION_CYCLE,
+        "authority_source": AUTHORITY_SOURCE,
+        "advisories": get_all_advisories()
+    }
+
+
+@app.get("/api/advisories/{disease_name}")
+def get_single_advisory(disease_name: str):
+    """Returns structured verified advisory for a specific rice leaf condition."""
+    adv = get_advisory_for_disease(disease_name)
+    if not adv:
+        # Case-insensitive match
+        for a in get_all_advisories():
+            if a["disease_name_en"].lower() == disease_name.lower():
+                adv = a
+                break
+    if not adv:
+        raise HTTPException(status_code=404, detail="Advisory not found for this condition.")
+    return adv
+
+
+# ==========================================
 # 4. AI Leaf Disease Detection (Prediction)
 # ==========================================
 
@@ -423,10 +453,15 @@ async def predict_leaf(
     gradcam_rel = result.get("gradcam_path")
     gradcam_filename = os.path.basename(gradcam_rel) if gradcam_rel else None
 
-    # Retrieve Botanical metadata
+    # Retrieve Botanical metadata & verified pesticide advisory
     disease_meta = DISEASE_DETAILS.get(disease, {})
+    pesticide_advisory = get_advisory_for_disease(disease)
 
-    # 6. Save prediction record to SQLite
+    is_unreliable = confidence_val < 40.0 or result.get("is_low_confidence", False)
+    unreliable_msg_en = "Unable to identify the disease reliably. Please take a clearer photo or consult an agricultural expert."
+    unreliable_msg_kn = "ರೋಗವನ್ನು ನಿಖರವಾಗಿ ಗುರುತಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಸ್ಪಷ್ಟವಾದ ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ ಅಥವಾ ಕೃಷಿ ತಜ್ಞರನ್ನು ಸಂಪರ್ಕಿಸಿ."
+
+    # 6. Save prediction record to SQLite (prevent duplicate saves within 60s)
     user_id = user["user_id"] if user else 2 # default to demo farmer if guest
     now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     pred_id = None
@@ -434,20 +469,30 @@ async def predict_leaf(
     try:
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
-        top_preds_json = json.dumps(result.get("top_predictions", []))
+        # Deduplication check: check if same image file or recent prediction exists
         cur.execute("""
-            INSERT INTO predictions (
-                user_id, image_filename, gradcam_filename, disease_name, confidence,
-                severity_level, healthy_area_pct, affected_area_pct, lesion_count,
-                top_predictions_json, is_low_confidence, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            user_id, saved_filename, gradcam_filename, disease, confidence_val,
-            sev_level, healthy_pct, lesion_pct, lesion_count,
-            top_preds_json, 1 if confidence_val < 60.0 else 0, now_str
-        ))
-        conn.commit()
-        pred_id = cur.lastrowid
+            SELECT id FROM predictions 
+            WHERE user_id = ? AND disease_name = ? AND image_filename = ?
+            LIMIT 1
+        """, (user_id, disease, saved_filename))
+        existing = cur.fetchone()
+        if existing:
+            pred_id = existing[0]
+        else:
+            top_preds_json = json.dumps(result.get("top_predictions", []))
+            cur.execute("""
+                INSERT INTO predictions (
+                    user_id, image_filename, gradcam_filename, disease_name, confidence,
+                    severity_level, healthy_area_pct, affected_area_pct, lesion_count,
+                    top_predictions_json, is_low_confidence, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                user_id, saved_filename, gradcam_filename, disease, confidence_val,
+                sev_level, healthy_pct, lesion_pct, lesion_count,
+                top_preds_json, 1 if is_unreliable else 0, now_str
+            ))
+            conn.commit()
+            pred_id = cur.lastrowid
         conn.close()
     except Exception as e:
         print(f"[RiceCare AI DB] Failed to save prediction to history: {e}")
@@ -455,11 +500,15 @@ async def predict_leaf(
     # 7. Formulate structured response
     return {
         "success": True,
+        "unreliable": is_unreliable,
+        "unreliable_message_en": unreliable_msg_en if is_unreliable else None,
+        "unreliable_message_kn": unreliable_msg_kn if is_unreliable else None,
         "disease": disease,
         "confidence": confidence_frac,
         "confidence_percentage": round(confidence_val, 2),
-        "confidence_level": conf_level,
+        "confidence_level": "Unreliable" if is_unreliable else conf_level,
         "advisory": disease_meta.get("expert_consultation") or "Review the disease information and management guidance.",
+        "pesticide_advisory": pesticide_advisory if not is_unreliable else None,
         "scientific_name": disease_meta.get("scientific_name", "Oryza sativa"),
         "pathogen_type": disease_meta.get("pathogen_type", "Botanical Specimen"),
         "symptoms": result.get("symptoms") or disease_meta.get("symptoms", ""),

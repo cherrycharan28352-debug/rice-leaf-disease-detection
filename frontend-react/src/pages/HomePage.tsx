@@ -168,20 +168,20 @@ export const HomePage: React.FC<HomePageProps> = ({
             <span>💡 <strong>{lang === 'kn' ? 'ಸಲಹೆ:' : lang === 'hi' ? 'सुझाव:' : 'Tip:'}</strong> {t.home_tip}</span>
           </div>
 
-          {/* Three Large Touch-Friendly Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 pt-4 max-w-2xl mx-auto">
+          {/* Five Large Touch-Friendly Buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 max-w-4xl mx-auto">
             {/* 1. Take a Photo Button */}
             <button
               onClick={() => setCurrentTab('detect')}
-              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-2 p-4 sm:p-5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-base sm:text-lg shadow-lg shadow-black/20 transition active:scale-95 border-2 border-amber-300 group"
+              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-1.5 p-3.5 sm:p-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm sm:text-base shadow-md transition active:scale-95 border-2 border-amber-300 group"
             >
-              <div className="w-12 h-12 rounded-xl bg-slate-950/10 flex items-center justify-center group-hover:scale-110 transition">
-                <Camera className="w-7 h-7 text-slate-950" />
+              <div className="w-10 h-10 rounded-xl bg-slate-950/10 flex items-center justify-center group-hover:scale-110 transition">
+                <Camera className="w-6 h-6 text-slate-950" />
               </div>
               <div className="text-left sm:text-center">
                 <span className="block leading-tight">{t.btn_take_photo}</span>
-                <span className="text-[11px] font-medium text-slate-800">
-                  {lang === 'kn' ? 'ಕ್ಯಾಮೆರಾ ಬಳಸಿ' : lang === 'hi' ? 'कैमरा खोलें' : 'Use Camera'}
+                <span className="text-[10px] font-medium text-slate-800">
+                  {lang === 'kn' ? 'ಕ್ಯಾಮೆರಾ ಬಳಸಿ' : 'Take Photo'}
                 </span>
               </div>
             </button>
@@ -189,31 +189,65 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* 2. Choose from Gallery Button */}
             <button
               onClick={() => setCurrentTab('detect')}
-              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-2 p-4 sm:p-5 rounded-2xl bg-white hover:bg-emerald-50 text-slate-950 font-black text-base sm:text-lg shadow-lg shadow-black/15 transition active:scale-95 border-2 border-white group"
+              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-1.5 p-3.5 sm:p-4 rounded-2xl bg-white hover:bg-emerald-50 text-slate-950 font-black text-sm sm:text-base shadow-md transition active:scale-95 border-2 border-white group"
             >
-              <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition">
-                <ImageIcon className="w-7 h-7 text-emerald-800" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition">
+                <ImageIcon className="w-6 h-6 text-emerald-800" />
               </div>
               <div className="text-left sm:text-center">
                 <span className="block leading-tight text-emerald-950">{t.btn_choose_gallery}</span>
-                <span className="text-[11px] font-medium text-emerald-800">
-                  {lang === 'kn' ? 'ಫೋನ್ ಫೋಟೋಗಳು' : lang === 'hi' ? 'गैलरी फोटो' : 'Saved Photos'}
+                <span className="text-[10px] font-medium text-emerald-800">
+                  {lang === 'kn' ? 'ಫೋನ್ ಫೋಟೋಗಳು' : 'Gallery'}
                 </span>
               </div>
             </button>
 
-            {/* 3. Learn About Rice Diseases Button */}
+            {/* 3. Check My Rice Leaf Button */}
+            <button
+              onClick={() => setCurrentTab('detect')}
+              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-1.5 p-3.5 sm:p-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm sm:text-base shadow-md transition active:scale-95 border-2 border-emerald-400 group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-slate-950/10 flex items-center justify-center group-hover:scale-110 transition">
+                <Sparkles className="w-6 h-6 text-slate-950" />
+              </div>
+              <div className="text-left sm:text-center">
+                <span className="block leading-tight">{t.btn_check_leaf}</span>
+                <span className="text-[10px] font-medium text-slate-900">
+                  {lang === 'kn' ? 'AI ಪರೀಕ್ಷೆ' : 'Check Leaf'}
+                </span>
+              </div>
+            </button>
+
+            {/* 4. Learn About Rice Diseases Button */}
             <button
               onClick={() => setCurrentTab('library')}
-              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-2 p-4 sm:p-5 rounded-2xl bg-emerald-900/80 hover:bg-emerald-900 text-white font-bold text-base sm:text-lg shadow-lg shadow-black/15 transition active:scale-95 border border-emerald-500/50 group"
+              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-1.5 p-3.5 sm:p-4 rounded-2xl bg-emerald-900/90 hover:bg-emerald-900 text-white font-bold text-sm sm:text-base shadow-md transition active:scale-95 border border-emerald-500/50 group"
             >
-              <div className="w-12 h-12 rounded-xl bg-emerald-800 flex items-center justify-center group-hover:scale-110 transition">
-                <BookOpen className="w-7 h-7 text-emerald-300" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-800 flex items-center justify-center group-hover:scale-110 transition">
+                <BookOpen className="w-6 h-6 text-emerald-300" />
               </div>
               <div className="text-left sm:text-center">
                 <span className="block leading-tight">{t.btn_learn_diseases}</span>
-                <span className="text-[11px] font-medium text-emerald-300">
-                  {lang === 'kn' ? '20 ರೋಗಗಳ ಮಾಹಿತಿ' : lang === 'hi' ? '20 रोगों की जानकारी' : '20 Conditions'}
+                <span className="text-[10px] font-medium text-emerald-300">
+                  {lang === 'kn' ? '20 ರೋಗಗಳು' : '20 Diseases'}
+                </span>
+              </div>
+            </button>
+
+            {/* 5. Saved Advice & Offline Guides Button */}
+            <button
+              onClick={() => setCurrentTab('history')}
+              className="flex sm:flex-col items-center justify-center space-x-3 sm:space-x-0 sm:space-y-1.5 p-3.5 sm:p-4 rounded-2xl bg-teal-900/90 hover:bg-teal-900 text-white font-bold text-sm sm:text-base shadow-md transition active:scale-95 border border-teal-500/50 group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-teal-800 flex items-center justify-center group-hover:scale-110 transition">
+                <ShieldCheck className="w-6 h-6 text-teal-300" />
+              </div>
+              <div className="text-left sm:text-center">
+                <span className="block leading-tight">
+                  {lang === 'kn' ? 'ಉಳಿಸಿದ ಸಲಹೆಗಳು' : lang === 'hi' ? 'सहेजी गई सलाह' : 'Saved Advice'}
+                </span>
+                <span className="text-[10px] font-medium text-teal-300">
+                  {lang === 'kn' ? 'ಆಫ್‌ಲೈನ್ ಮಾಹಿತಿ' : 'Offline Guides'}
                 </span>
               </div>
             </button>

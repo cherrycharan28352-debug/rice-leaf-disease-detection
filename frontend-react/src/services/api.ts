@@ -1,4 +1,5 @@
-import { PredictionResult, DiseaseItem, DashboardStats, HistoryRecord, UserProfile } from '../types';
+import { PredictionResult, DiseaseItem, DashboardStats, HistoryRecord, UserProfile, PesticideAdvisory } from '../types';
+import { networkService } from './network';
 
 export const getApiBase = (): string => {
   const custom = localStorage.getItem('ricecare_api_url');
@@ -51,7 +52,7 @@ export const api = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(`${getApiBase()}/predict`, {
+    const data: PredictionResult = await networkService.fetchWithRetry(`${getApiBase()}/predict`, {
       method: 'POST',
       headers: {
         ...getAuthHeader(),
@@ -59,16 +60,31 @@ export const api = {
       body: formData,
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || 'Image analysis failed. Please ensure the image is a clear rice leaf.');
-    }
-
     // Resolve asset URLs for native mobile compatibility
-    if (data.image_url) data.image_url = resolveAssetUrl(data.image_url);
+    if (data.image_url) data.image_url = resolveAssetUrl(data.image_url) || data.image_url;
     if (data.gradcam_url) data.gradcam_url = resolveAssetUrl(data.gradcam_url);
 
     return data;
+  },
+
+  async getAdvisories(): Promise<PesticideAdvisory[]> {
+    try {
+      if (!networkService.isOnline()) {
+        const cached = networkService.getCachedAdvisories();
+        if (cached.length > 0) return cached;
+      }
+      const res = await networkService.fetchWithRetry<{ advisories: PesticideAdvisory[] }>(
+        `${getApiBase()}/advisories`
+      );
+      if (res && res.advisories) {
+        networkService.cacheAdvisories(res.advisories);
+        return res.advisories;
+      }
+      return networkService.getCachedAdvisories();
+    } catch (e) {
+      console.warn('Falling back to local cached advisories:', e);
+      return networkService.getCachedAdvisories();
+    }
   },
 
   async getDiseases(search?: string): Promise<DiseaseItem[]> {

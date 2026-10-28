@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
+import { FeatureStatusBanner } from './components/FeatureStatusBanner';
 import { Footer } from './components/Footer';
 import { BottomNav } from './components/BottomNav';
 import { AuthModal } from './components/AuthModal';
@@ -80,6 +81,9 @@ export function App() {
         lang={lang}
         setLang={setLang}
       />
+
+      {/* Real-time Online/Offline Feature Availability Banner */}
+      <FeatureStatusBanner lang={lang} />
 
       {/* Main Page Content */}
       <main className="flex-1">

@@ -5,13 +5,43 @@ export interface SeverityInfo {
   lesion_count: number;
 }
 
+export interface PesticideAdvisory {
+  disease_id: number;
+  disease_name_en: string;
+  disease_name_kn: string;
+  pathogen_type: string;
+  symptoms_en: string;
+  symptoms_kn: string;
+  has_chemical_option: boolean;
+  nonchemical_management_en: string;
+  nonchemical_management_kn: string;
+  prevention_en: string;
+  prevention_kn: string;
+  active_ingredient: string;
+  formulation: string;
+  registered_crop: string;
+  approved_target_disease: string;
+  label_rate: string;
+  application_method: string;
+  safety_precautions: string;
+  pre_harvest_interval_days: number;
+  re_entry_interval_hours: number;
+  source_url: string;
+  verification_date: string;
+  advisory_status: 'verified' | 'advisory_only';
+}
+
 export interface PredictionResult {
   success: boolean;
+  unreliable?: boolean;
+  unreliable_message_en?: string | null;
+  unreliable_message_kn?: string | null;
   disease: string;
   confidence: number;
   confidence_percentage: number;
-  confidence_level: 'High' | 'Moderate' | 'Low';
+  confidence_level: 'High' | 'Moderate' | 'Low' | 'Unreliable';
   advisory: string;
+  pesticide_advisory?: PesticideAdvisory | null;
   scientific_name: string;
   pathogen_type: string;
   symptoms: string;
