@@ -11,9 +11,10 @@ interface DownloadModalProps {
 
 export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
-  const sha256Checksum = "9e5c47f8a12d3b4e6f7a8c9b0e1d2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e";
-  const apkDownloadUrl = "/downloads/ricecare-ai-v2.0.0.apk";
-  const githubReleasesUrl = "https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases";
+  const sha256Checksum = "23959f3669de25632113ecc6ff545cb7089cc46ce334205f589aa9ac58396a37";
+  const directApkUrl = "https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases/download/v2.0.0/RiceCare-AI-v2.0.0.apk";
+  const localApkUrl = "/downloads/RiceCare-AI-v2.0.0.apk";
+  const githubReleasesUrl = "https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/releases/tag/v2.0.0";
   const githubActionsUrl = "https://github.com/cherrycharan28352-debug/rice-leaf-disease-detection/actions";
 
   if (!isOpen) return null;
@@ -58,27 +59,36 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose })
               Install directly on any Android smartphone or tablet:
             </p>
             
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               <a
-                href={githubReleasesUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center space-x-2 w-full py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition active:scale-95"
+                href={directApkUrl}
+                download="RiceCare-AI-v2.0.0.apk"
+                className="inline-flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/25 transition active:scale-95"
               >
-                <Download className="w-4 h-4" />
-                <span>Download Latest APK from GitHub Releases</span>
-                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                <Download className="w-5 h-5 animate-bounce" />
+                <span>Download APK Directly (8.28 MB)</span>
               </a>
 
-              <a
-                href={githubActionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center space-x-2 w-full py-2.5 px-4 rounded-xl bg-white border border-slate-300 text-slate-800 font-semibold text-xs hover:bg-slate-50 transition"
-              >
-                <Code2 className="w-4 h-4 text-slate-700" />
-                <span>View Automated Builds in GitHub Actions</span>
-              </a>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={githubReleasesUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center space-x-1.5 py-2.5 px-3 rounded-xl bg-white border border-slate-300 text-slate-800 font-semibold text-xs hover:bg-slate-50 transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>GitHub Release</span>
+                </a>
+
+                <a
+                  href={localApkUrl}
+                  download="RiceCare-AI-v2.0.0.apk"
+                  className="inline-flex items-center justify-center space-x-1.5 py-2.5 px-3 rounded-xl bg-white border border-slate-300 text-slate-800 font-semibold text-xs hover:bg-slate-50 transition"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Direct Server Mirror</span>
+                </a>
+              </div>
             </div>
 
             <p className="text-[10px] text-slate-500">
