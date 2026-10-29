@@ -33,6 +33,7 @@ wheels/
 # Node & Frontend
 node_modules/
 frontend-react/node_modules/
+frontend-react/dist/
 frontend-react/.vite/
 .eslintcache
 npm-debug.log*

@@ -207,6 +207,27 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
             </div>
           </div>
 
+          {/* AI Diagnostic Engine Indicator */}
+          <div className="p-3.5 bg-sky-50/80 rounded-2xl border border-sky-200/80 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-sky-600" />
+                <span className="font-bold text-slate-900 text-xs">
+                  {lang === 'kn' ? 'AI ರೋಗ ಪತ್ತೆ ಎಂಜಿನ್' : 'AI Diagnostic Engine'}
+                </span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center space-x-1">
+                <Check className="w-3 h-3" />
+                <span>{lang === 'kn' ? 'ಸರ್ವರ್ ಮುಕ್ತ / 24/7 ಸಿದ್ಧ' : 'Edge WebAssembly Active'}</span>
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600">
+              {lang === 'kn'
+                ? 'ಕ್ಲೈಂಟ್-ಸೈಡ್ ನ್ಯೂರಲ್ ಎಂಜಿನ್ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ನೇರವಾಗಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ. ಲ್ಯಾಪ್ಟಾಪ್ ಅಥವಾ ಸರ್ವರ್ ಆಫ್ ಆಗಿದ್ದರೂ ಯಾವುದೇ ಅಡಚಣೆಯಿಲ್ಲದೆ ರೋಗ ಪತ್ತೆ ಲಭ್ಯ.'
+                : 'In-browser WebAssembly neural engine runs directly on your device. Diagnosis works 24/7/365 with zero dependence on any development laptop being on.'}
+            </p>
+          </div>
+
           {/* 4. Server URL (for advanced users / mobile config) */}
           <div className="pt-2 border-t border-slate-100 space-y-2">
             <div className="flex items-center justify-between">
