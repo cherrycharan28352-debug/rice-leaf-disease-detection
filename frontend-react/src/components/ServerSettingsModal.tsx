@@ -213,14 +213,26 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
               <label className="block font-semibold text-slate-800 text-[11px]">
                 {lang === 'kn' ? 'ಸರ್ವರ್ ಲಿಂಕ್ (ಐಚ್ಛಿಕ):' : 'Backend Server URL (Optional):'}
               </label>
+            </div>
+
+            {/* Quick preset chips */}
+            <div className="flex flex-wrap gap-1.5 pb-1">
               <button
                 type="button"
-                onClick={() => setServerUrl(DEFAULT_PRODUCTION_API_URL)}
-                className="text-[10px] text-emerald-700 font-bold hover:underline"
+                onClick={() => setServerUrl('https://ricecare-ai.onrender.com')}
+                className="px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-200 transition"
               >
-                {lang === 'kn' ? 'ಕ್ಲೌಡ್ ಸರ್ವರ್ ಬಳಸಿ' : 'Use Cloud Production'}
+                Render Cloud
+              </button>
+              <button
+                type="button"
+                onClick={() => setServerUrl('https://lowest-governor-marker-craps.trycloudflare.com')}
+                className="px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 text-[10px] font-bold border border-teal-200 transition"
+              >
+                Live Dev Tunnel
               </button>
             </div>
+
             <input
               type="text"
               value={serverUrl}
