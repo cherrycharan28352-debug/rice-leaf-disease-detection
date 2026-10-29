@@ -1,0 +1,47 @@
+name: Production CI/CD & Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-and-test:
+    name: Run Pre-Flight Tests & AI Model Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: Verify Quantum VQC Neural Model
+        run: |
+          python verification_tests/test_quantum_vqc.py
+
+      - name: Verify Production Readiness Suite (11 Tests)
+        run: |
+          python verification_tests/test_production_readiness.py
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test Frontend Production Build
+        run: |
+          cd frontend-react
+          npm ci
+          npm run build

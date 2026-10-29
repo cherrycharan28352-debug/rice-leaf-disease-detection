@@ -225,7 +225,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
               type="text"
               value={serverUrl}
               onChange={(e) => setServerUrl(e.target.value)}
-              placeholder="e.g. https://coordinate-opponents-enables-reported.trycloudflare.com"
+              placeholder="e.g. https://ricecare-ai.onrender.com"
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-emerald-500 font-mono"
             />
 

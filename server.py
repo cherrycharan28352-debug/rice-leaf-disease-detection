@@ -48,6 +48,7 @@ from scripts.backup_manager import (
     backup_uploads,
     restore_database
 )
+from backend.database.cloud_db import test_database_connection
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "ricecare_admin_secure_key_2026")
 
@@ -192,6 +193,13 @@ def health_check():
         "database_status": "connected" if os.path.exists(DB_PATH) else "unavailable",
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+@app.get("/api/database/status")
+@app.get("/api/v1/database/status")
+def get_database_status():
+    """Verify database health and connectivity for production monitoring."""
+    return test_database_connection()
 
 
 @app.get("/api/remote-config")

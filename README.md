@@ -1,3 +1,13 @@
+---
+title: RiceCare AI - ಭತ್ತದ ರೋಗ ಪತ್ತೆ
+emoji: 🌾
+colorFrom: green
+colorTo: emerald
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # 🌾 RiceCare AI — Rice Leaf Disease Detection
 
 An intelligent, full-stack, mobile-friendly agricultural pathology application engineered to assist farmers, agricultural extension workers, students, and researchers in diagnosing and managing rice foliar diseases using computer vision and deep learning.

@@ -1,23 +1,37 @@
 import { PredictionResult, DiseaseItem, DashboardStats, HistoryRecord, UserProfile, PesticideAdvisory, RemoteConfig, AppVersionInfo } from '../types';
 import { networkService } from './network';
 
-export const DEFAULT_PRODUCTION_API_URL = 'https://equations-tables-weekly-aggregate.trycloudflare.com';
+export const DEFAULT_PRODUCTION_API_URL = 'https://ricecare-ai.onrender.com';
 
 export const getApiRoot = (): string => {
+  // 1. User manual override in Settings (stored in localStorage)
   const custom = localStorage.getItem('ricecare_api_url');
   if (custom && custom.trim() !== '') {
     return custom.trim().replace(/\/$/, '');
   }
+
+  // 2. Vite environment variable (set at build or deploy time)
   if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim() !== '') {
     return import.meta.env.VITE_API_URL.trim().replace(/\/$/, '');
   }
-  // If running inside native Android WebView (Capacitor file:// or capacitor://)
-  if (typeof window !== 'undefined' && (window.location.protocol === 'capacitor:' || window.location.protocol === 'file:')) {
-    return DEFAULT_PRODUCTION_API_URL;
+
+  // 3. If running inside web browser:
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const origin = window.location.origin;
+    const isStaticCdn = 
+      origin.includes('web.app') || 
+      origin.includes('firebaseapp.com') || 
+      origin.includes('vercel.app') || 
+      origin.includes('netlify.app') || 
+      origin.includes('github.io');
+    
+    // If unified deployment (Render, Hugging Face, Railway or custom full-stack domain)
+    if (!isStaticCdn && !origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+      return origin;
+    }
   }
-  if (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
-    return window.location.origin;
-  }
+
+  // 4. Default fallback to production cloud backend
   return DEFAULT_PRODUCTION_API_URL;
 };
 
